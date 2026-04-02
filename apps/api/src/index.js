@@ -74,7 +74,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// ⚠️  Vulnerable Login endpoint – intentional SQL injection for demo
+// Secured Login endpoint
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username) {
@@ -85,11 +85,12 @@ app.post('/login', async (req, res) => {
   const hashedPassword = hashPassword(passedPassword);
 
   try {
-    // VULNERABLE: string concatenation instead of parameterized query
-    const queryStr = `SELECT * FROM users WHERE username = '${username}' AND password = '${hashedPassword}'`;
-    console.log('[VULNERABLE QUERY]', queryStr);
+    // Secured parameterized query
+    const queryStr = `SELECT * FROM users WHERE username = $1 AND password = $2`;
 
-    const result = await client.query(queryStr);
+    console.log('[SECURED QUERY]', queryStr);
+
+    const result = await client.query(queryStr, [username, hashedPassword]);
 
     if (result.rows.length > 0) {
       const user = result.rows[0];
